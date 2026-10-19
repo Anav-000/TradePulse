@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-background: 8 10 16;
+    --color-card: 15 20 32;
+    --color-border: 30 39 58;
+  }
+
+  body {
+    background-color: #080a10;
+    color: #94a3b8;
+    overflow-x: hidden;
+  }
+
+  /* Custom high-performance dark scrollbars for terminal feel */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #080a10;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e273a;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2d3b55;
+  }
+}
+
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
