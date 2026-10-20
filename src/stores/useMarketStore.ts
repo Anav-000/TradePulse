@@ -31,7 +31,10 @@ interface MarketState {
   setCategoryFilter: (filter: 'all' | 'gainers' | 'losers' | 'favorites') => void;
   toggleFavorite: (symbol: string) => void;
   getSelectedTicker: () => CryptoTicker;
-  updateTickersBatch: (batch: Record<string, NormalizedTickerUpdate>) => void;
+  updateTickersBatch: (
+    batch: Record<string, NormalizedTickerUpdate>,
+    source?: 'websocket' | 'rest'
+  ) => void;
   setOrderBook: (data: OrderBookData) => void;
   setConnectionStatus: (status: ConnectionStatus, latencyMs?: number) => void;
   setGlobalOverview: (
@@ -40,6 +43,11 @@ interface MarketState {
     status: 'live' | 'stale' | 'unavailable'
   ) => void;
   updateSparklines: (sparklines: Record<string, { prices: number[]; changePercent7d: number }>) => void;
+  syncTickerPrice: (
+    symbol: string,
+    candleClosePrice: number,
+    options?: { candleTimestamp?: number; fetchTime?: number }
+  ) => void;
 }
 
 export const useMarketStore = create<MarketState>((set, get) => ({
@@ -83,7 +91,7 @@ export const useMarketStore = create<MarketState>((set, get) => ({
     return state.tickers.find((t) => t.symbol === state.selectedSymbol) || state.tickers[0];
   },
 
-  updateTickersBatch: (batch) => {
+  updateTickersBatch: (batch, source = 'websocket') => {
     set((state) => {
       let hasChanges = false;
       const updatedTickers = state.tickers.map((t) => {
@@ -100,6 +108,8 @@ export const useMarketStore = create<MarketState>((set, get) => ({
           low24h: update.low24h,
           volume24h: update.volume24h,
           quoteVolume24h: update.quoteVolume24h,
+          lastUpdated: update.timestamp || Date.now(),
+          source: source,
         };
       });
 
@@ -136,5 +146,50 @@ export const useMarketStore = create<MarketState>((set, get) => ({
         };
       }),
     }));
+  },
+
+  syncTickerPrice: (symbol, candleClosePrice, options) => {
+    if (!Number.isFinite(candleClosePrice) || candleClosePrice <= 0) return;
+    const targetSymbol = symbol.toUpperCase();
+
+    set((state) => {
+      const existing = state.tickers.find((t) => t.symbol === targetSymbol);
+      if (!existing) return state;
+
+      const now = Date.now();
+      const candleTime = options?.candleTimestamp || 0;
+      const fetchTime = options?.fetchTime || now;
+
+      // 1. Freshness & Source Protection:
+      // If the ticker was updated by a live stream (WebSocket or REST) and that data is fresh
+      // (within the last 60 seconds, or newer than the candle's close time), NEVER overwrite it with historical candle data.
+      const isLiveSource = existing.source === 'websocket' || existing.source === 'rest';
+      const tickerAgeMs = existing.lastUpdated ? now - existing.lastUpdated : Infinity;
+      const isFreshLive = isLiveSource && tickerAgeMs < 60000;
+      const isNewerThanCandle = Boolean(existing.lastUpdated && candleTime && existing.lastUpdated >= candleTime);
+
+      if (isFreshLive || isNewerThanCandle) {
+        return state;
+      }
+
+      // 2. Jitter suppression if both are already aligned within 0.1% (unless ticker is still unverified mock)
+      const diffPercent = Math.abs(existing.lastPrice - candleClosePrice) / candleClosePrice;
+      if (diffPercent < 0.001 && existing.source !== 'mock') {
+        return state;
+      }
+
+      return {
+        tickers: state.tickers.map((t) =>
+          t.symbol === targetSymbol
+            ? {
+                ...t,
+                lastPrice: candleClosePrice,
+                lastUpdated: fetchTime,
+                source: 'candle_sync',
+              }
+            : t
+        ),
+      };
+    });
   },
 }));

@@ -17,6 +17,8 @@ export interface CryptoTicker {
   quoteVolume24h: number;      // in quote asset (USDT)
   sparkline7d: number[];       // array of recent sample prices for mini-charts
   isFavorite?: boolean;
+  lastUpdated?: number;        // Epoch timestamp (ms) when price was last updated
+  source?: 'websocket' | 'rest' | 'candle_sync' | 'mock'; // Data source origin
 }
 
 export interface MarketOverviewStats {

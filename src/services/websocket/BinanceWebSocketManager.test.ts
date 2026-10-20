@@ -48,4 +48,32 @@ describe('BinanceWebSocketManager', () => {
     const activeSubs = manager.getActiveSubscriptions();
     expect(Array.isArray(activeSubs)).toBe(true);
   });
+
+  it('ingests book quotes and notifies bookTicker subscribers', () => {
+    const manager = BinanceWebSocketManager.getInstance();
+    const receivedQuotes: any[] = [];
+
+    const unsubscribe = manager.subscribeBookTicker((q) => {
+      receivedQuotes.push(q);
+    });
+
+    manager.ingestBookQuotes({
+      BTCUSDT: {
+        symbol: 'BTCUSDT',
+        bidPrice: 82100.0,
+        askPrice: 82100.5,
+        lastPrice: 82100.25,
+        timestamp: 1729400000000,
+      },
+    });
+
+    expect(receivedQuotes.length).toBe(1);
+    expect(receivedQuotes[0].symbol).toBe('BTCUSDT');
+    expect(receivedQuotes[0].bidPrice).toBe(82100.0);
+
+    const latest = manager.getLatestBookQuote('BTCUSDT');
+    expect(latest?.askPrice).toBe(82100.5);
+
+    unsubscribe();
+  });
 });

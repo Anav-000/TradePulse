@@ -4,6 +4,7 @@ import {
   NormalizedTickerUpdate,
   NormalizedKlineUpdate,
   BinanceCombinedWrapper,
+  BookQuote,
 } from './types';
 import {
   normalizeTickerMessage,
@@ -27,13 +28,7 @@ type TickerBatchListener = (batch: Record<string, NormalizedTickerUpdate>) => vo
 type KlineListener = (kline: NormalizedKlineUpdate) => void;
 type DepthListener = (depth: OrderBookData) => void;
 
-export interface BookQuote {
-  symbol: string;
-  bidPrice: number;
-  askPrice: number;
-  lastPrice: number;
-  timestamp: number;
-}
+export type { BookQuote };
 type BookTickerListener = (quote: BookQuote) => void;
 
 interface ManagerOptions {
@@ -85,7 +80,7 @@ export class BinanceWebSocketManager {
   private latestBookQuotes: Map<string, BookQuote> = new Map();
 
   private constructor(options?: ManagerOptions) {
-    this.primaryUrl = options?.primaryUrl || 'wss://stream.binance.com:9443/ws';
+    this.primaryUrl = options?.primaryUrl || 'wss://stream.binance.com/ws';
     this.fallbackUrl = options?.fallbackUrl || 'wss://data-stream.binance.vision/ws';
     this.batchIntervalMs = options?.batchIntervalMs || 150;
 
@@ -230,6 +225,17 @@ export class BinanceWebSocketManager {
       res[k] = v;
     });
     return res;
+  }
+
+  /**
+   * Ingests book quotes (e.g. from REST ticker hydration or fallback polling)
+   * to ensure order matching is continuously supported even if WebSocket degrades.
+   */
+  public ingestBookQuotes(quotes: Record<string, BookQuote>): void {
+    for (const [sym, quote] of Object.entries(quotes)) {
+      this.latestBookQuotes.set(sym.toUpperCase(), quote);
+      this.bookTickerListeners.forEach((listener) => listener(quote));
+    }
   }
 
   private handleOpen(): void {

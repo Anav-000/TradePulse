@@ -31,6 +31,16 @@ export function ChartContainer() {
   const latestHistoricalCandle = candles.length > 0 ? candles[candles.length - 1] : null;
   const activeLatestCandle = liveCandle || latestHistoricalCandle;
 
+  // Synchronize ticker price with verified candle close if unaligned
+  useEffect(() => {
+    if (latestHistoricalCandle && latestHistoricalCandle.close > 0) {
+      useMarketStore.getState().syncTickerPrice(selectedSymbol, latestHistoricalCandle.close, {
+        candleTimestamp: latestHistoricalCandle.time * 1000,
+        fetchTime: data?.lastUpdated,
+      });
+    }
+  }, [selectedSymbol, latestHistoricalCandle?.close, latestHistoricalCandle?.time, data?.lastUpdated]);
+
   const handleFitContent = () => {
     chartHandleRef.current?.fitContent();
   };

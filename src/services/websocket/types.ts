@@ -58,6 +58,14 @@ export interface BinanceCombinedWrapper {
 /**
  * Normalized data structures used across the application
  */
+export interface BookQuote {
+  symbol: string;
+  bidPrice: number;
+  askPrice: number;
+  lastPrice: number;
+  timestamp: number;
+}
+
 export interface NormalizedTickerUpdate {
   symbol: string;
   lastPrice: number;
