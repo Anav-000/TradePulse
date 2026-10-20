@@ -2,6 +2,14 @@
 
 # 📈 TradePulse
 
+[![Live Demo](https://img.shields.io/badge/🚀_LIVE_DEMO-Launch_TradePulse-00C896?style=for-the-badge&logo=vercel&logoColor=white)](https://trade-pulse-ruby.vercel.app)
+
+[![GitHub](https://img.shields.io/badge/GitHub-Source_Code-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Anav-000/TradePulse)
+
+**[🌐 Explore the Live Application](https://trade-pulse-ruby.vercel.app)**
+
+> **Paper Trading Only:** TradePulse uses live cryptocurrency market data with simulated trades and virtual funds. No real-money transactions are performed.
+
 ### Professional Cryptocurrency Paper Trading & Portfolio Analytics Terminal
 
 **Real-time market intelligence. Simulated order execution. Precision portfolio accounting.**
@@ -10,7 +18,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
 [![Zustand](https://img.shields.io/badge/Zustand-State_Management-443E38?style=for-the-badge)](https://zustand.docs.pmnd.rs/)
-[![Vitest](https://img.shields.io/badge/Vitest-164_Tests_Passing-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+![Tests](https://img.shields.io/badge/Vitest-179_Tests_Passing-97CA00?style=for-the-badge&logo=vitest&logoColor=white)
 
 [**Explore Features**](#-key-features) · [**Screenshots**](#-application-screenshots) · [**Architecture**](#-system-architecture) · [**Get Started**](#-getting-started) · [**Testing**](#-testing--quality-assurance)
 
